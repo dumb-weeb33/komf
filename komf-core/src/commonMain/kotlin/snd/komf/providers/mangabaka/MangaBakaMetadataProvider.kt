@@ -17,6 +17,7 @@ import snd.komf.providers.CoreProviders
 import snd.komf.providers.MetadataProvider
 import snd.komf.util.NameSimilarityMatcher
 import kotlin.time.Duration.Companion.minutes
+import snd.komf.providers.mangabaka.api.MangaBakaSeriesImage
 
 class MangaBakaMetadataProvider(
     private val dataSource: MangaBakaDataSource,
@@ -24,6 +25,8 @@ class MangaBakaMetadataProvider(
     private val nameMatcher: NameSimilarityMatcher,
     private val coverFetchClient: HttpClient?,
     mediaType: MediaType,
+    private val fetchVolumeCovers: Boolean,
+    private val volumeCoverLanguage: String?,
 ) : MetadataProvider {
     private val seriesTypes: List<MangaBakaType> = when (mediaType) {
         MediaType.MANGA -> listOf(
@@ -49,8 +52,10 @@ class MangaBakaMetadataProvider(
         val id = seriesId.toMangaBakaId()
         val series = cache.get(id) { dataSource.getSeries(id) }
         val cover = fetchCover(series)
-
-        return metadataMapper.toSeriesMetadata(series, cover)
+        val volumeImages = if (fetchVolumeCovers)
+            imagesCache.get(id) { dataSource.getSeriesImages(id, volumeCoverLanguage) }
+        else emptyList()
+        return metadataMapper.toSeriesMetadata(series, cover, volumeImages)
     }
 
     override suspend fun getSeriesCover(seriesId: ProviderSeriesId): Image? {
@@ -59,11 +64,17 @@ class MangaBakaMetadataProvider(
         return fetchCover(series)
     }
 
-    override suspend fun getBookMetadata(
-        seriesId: ProviderSeriesId,
-        bookId: ProviderBookId
-    ): ProviderBookMetadata {
-        TODO("Not yet implemented")
+    override suspend fun getBookMetadata(seriesId: ProviderSeriesId, bookId: ProviderBookId): ProviderBookMetadata {
+        val id = seriesId.toMangaBakaId()
+        val images = imagesCache.get(id) { dataSource.getSeriesImages(id, volumeCoverLanguage) }
+        val match = images.firstOrNull { it.id.toString() == bookId.id }
+        val image = match?.image?.x350?.x1?.let { url ->
+            coverFetchClient?.let { client ->
+                val response = client.get(url)
+                Image(response.body(), response.contentType()?.let { "${it.contentType}/${it.contentSubtype}" })
+            }
+        }
+        return metadataMapper.toBookMetadata(image)
     }
 
     override suspend fun searchSeries(
@@ -110,6 +121,10 @@ class MangaBakaMetadataProvider(
             response.contentType()?.let { "${it.contentType}/${it.contentSubtype}" }
         )
     }
+
+    private val imagesCache = Cache.Builder<MangaBakaSeriesId, List<MangaBakaSeriesImage>>()
+        .expireAfterWrite(30.minutes)
+        .build()
 
     private fun ProviderSeriesId.toMangaBakaId() = MangaBakaSeriesId(this.value.toInt())
 }

@@ -26,4 +26,11 @@ class MangaBakaApiClient(private val ktor: HttpClient) : MangaBakaDataSource {
     override suspend fun getSeries(id: MangaBakaSeriesId): MangaBakaSeries {
         return ktor.get("${baseUrl}/v1/series/${id}").body<MangaBakaResponse>().data
     }
+
+    override suspend fun getSeriesImages(id: MangaBakaSeriesId, language: String?): List<MangaBakaSeriesImage> {
+        return ktor.get("${baseUrl}/v1/series/${id}/images") {
+            parameter("type", "volume")
+            language?.let { parameter("language", it) }
+        }.body<MangaBakaImagesResponse>().data
+    }
 }

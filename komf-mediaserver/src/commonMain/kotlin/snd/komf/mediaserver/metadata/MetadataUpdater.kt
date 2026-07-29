@@ -161,7 +161,8 @@ class MetadataUpdater(
             mediaServerClient.uploadBookThumbnail(
                 bookId = bookId,
                 thumbnail = thumbnail,
-                selected = selectThumbnail
+                selected = selectThumbnail,
+                lock = lockCovers,
             )
         }
 

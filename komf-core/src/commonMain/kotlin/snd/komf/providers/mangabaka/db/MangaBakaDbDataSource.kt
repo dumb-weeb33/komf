@@ -30,6 +30,7 @@ import snd.komf.providers.mangabaka.MangaBakaStatus
 import snd.komf.providers.mangabaka.MangaBakaType
 import snd.komf.providers.mangabaka.db.MangaBakaSeriesTable.MangaBakaDbSecondaryTitle
 import kotlin.time.Instant
+import snd.komf.providers.mangabaka.api.MangaBakaSeriesImage
 
 class MangaBakaDbDataSource(
     private val database: Database,
@@ -83,6 +84,10 @@ class MangaBakaDbDataSource(
                 .first()
                 .toModel()
         }
+    }
+
+    override suspend fun getSeriesImages(id: MangaBakaSeriesId, language: String?): List<MangaBakaSeriesImage> {
+        return emptyList()
     }
 
     private fun ResultRow.toModel(): MangaBakaSeries {

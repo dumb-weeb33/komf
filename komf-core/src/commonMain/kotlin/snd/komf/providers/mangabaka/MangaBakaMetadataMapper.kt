@@ -21,6 +21,12 @@ import snd.komf.providers.CoreProviders
 import snd.komf.providers.MetadataConfigApplier
 import snd.komf.providers.SeriesMetadataConfig
 import snd.komf.util.toStingEncoded
+import snd.komf.model.BookMetadata
+import snd.komf.model.BookRange
+import snd.komf.model.ProviderBookId
+import snd.komf.model.ProviderBookMetadata
+import snd.komf.model.SeriesBook
+import snd.komf.providers.mangabaka.api.MangaBakaSeriesImage
 
 
 class MangaBakaMetadataMapper(
@@ -29,7 +35,11 @@ class MangaBakaMetadataMapper(
     private val artistRoles: Collection<AuthorRole>,
 ) {
 
-    fun toSeriesMetadata(series: MangaBakaSeries, thumbnail: Image? = null): ProviderSeriesMetadata {
+    fun toSeriesMetadata(
+        series: MangaBakaSeries,
+        thumbnail: Image? = null,
+        volumeImages: List<MangaBakaSeriesImage> = emptyList(),
+    ): ProviderSeriesMetadata {
         val status = when (series.status) {
             MangaBakaStatus.RELEASING -> SeriesStatus.ONGOING
             MangaBakaStatus.UPCOMING -> SeriesStatus.ONGOING
@@ -38,6 +48,20 @@ class MangaBakaMetadataMapper(
             MangaBakaStatus.HIATUS -> SeriesStatus.HIATUS
             MangaBakaStatus.UNKNOWN -> SeriesStatus.ONGOING
         }
+
+        val books = volumeImages
+            .filter { it.type == "volume" && it.indexNumeric != null }
+            .groupBy { it.indexNumeric }
+            .map { (number, images) ->
+                val chosen = images.firstOrNull { it.note == null } ?: images.first()
+                SeriesBook(
+                    id = ProviderBookId(chosen.id.toString()),
+                    number = BookRange(number!!),
+                    name = chosen.index,
+                    type = null,
+                    edition = null,
+                )
+            }
 
         val authors = series.authors?.flatMap { authorRoles.map { role -> Author(it, role) } } ?: emptyList()
         val artists = series.artists?.flatMap { artistRoles.map { role -> Author(it, role) } } ?: emptyList()
@@ -113,10 +137,13 @@ class MangaBakaMetadataMapper(
         )
 
         return MetadataConfigApplier.apply(
-            ProviderSeriesMetadata(id = ProviderSeriesId(series.id.toString()), metadata = metadata),
+            ProviderSeriesMetadata(id = ProviderSeriesId(series.id.toString()), metadata = metadata, books=books),
             metadataConfig
         )
     }
+
+    fun toBookMetadata(cover: Image?): ProviderBookMetadata =
+        ProviderBookMetadata(metadata = BookMetadata(thumbnail = cover))
 
     fun toSeriesSearchResult(series: MangaBakaSeries): SeriesSearchResult {
         return SeriesSearchResult(

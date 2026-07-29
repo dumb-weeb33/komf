@@ -70,6 +70,8 @@ data class MangaBakaConfig(
     val artistRoles: Collection<AuthorRole> = listOf(PENCILLER, INKER, COLORIST, LETTERER, COVER),
 
     val mode: MangaBakaMode = MangaBakaMode.API,
+    val volumeCoverLanguage: String? = null,
+    val fetchVolumeCovers: Boolean = false,
 )
 
 @Serializable
