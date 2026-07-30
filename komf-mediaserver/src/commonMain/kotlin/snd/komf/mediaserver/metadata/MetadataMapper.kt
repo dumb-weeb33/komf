@@ -78,6 +78,7 @@ class MetadataMapper {
                 authors = getIfNotLockedOrEmpty(authors, authorsLock),
                 releaseYear = getIfNotLockedOrEmpty(patch.releaseDate?.year, releaseYearLock),
                 links = getIfNotLockedOrEmpty(patch.links, linksLock),
+                externalIds = patch.externalIds,
             )
         }
 

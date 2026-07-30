@@ -29,8 +29,15 @@ data class SeriesMetadata(
     val releaseDate: ReleaseDate? = null,
     val links: Collection<WebLink> = emptyList(),
     val score: Double? = null,
+    val externalIds: ExternalIds? = null,
 
     val thumbnail: Image? = null,
+)
+@Serializable
+data class ExternalIds(
+    val aniListId: Int? = null,
+    val malId: Int? = null,
+    val mangaBakaId: Int? = null,
 )
 
 @Serializable

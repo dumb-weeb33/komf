@@ -31,7 +31,8 @@ object MetadataConfigApplier {
                     releaseDate = getIfEnabled(metadata.releaseDate, config.releaseDate),
                     thumbnail = getIfEnabled(metadata.thumbnail, config.thumbnail),
                     links = getIfEnabled(metadata.links, config.links) ?: emptyList(),
-                    score = getIfEnabled(metadata.score, config.score)
+                    score = getIfEnabled(metadata.score, config.score),
+                    externalIds = metadata.externalIds,
                 )
             )
         }

@@ -10,5 +10,8 @@ data class KavitaSeriesUpdateRequest(
     val sortName: String,
     val coverImageLocked: Boolean,
     val sortNameLocked: Boolean,
-    val localizedNameLocked: Boolean
+    val localizedNameLocked: Boolean,
+    val aniListId: Int? = null,
+    val malId: Int? = null,
+    val mangaBakaId: Int? = null,
 )

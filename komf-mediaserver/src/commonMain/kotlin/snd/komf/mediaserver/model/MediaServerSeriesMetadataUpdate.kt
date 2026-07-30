@@ -4,6 +4,7 @@ import snd.komf.model.ReadingDirection
 import snd.komf.model.SeriesStatus
 import snd.komf.model.SeriesTitle
 import snd.komf.model.WebLink
+import snd.komf.model.ExternalIds
 
 data class MediaServerSeriesMetadataUpdate(
     val status: SeriesStatus? = null,
@@ -22,6 +23,7 @@ data class MediaServerSeriesMetadataUpdate(
     val authors: Collection<MediaServerAuthor>? = null,
     val releaseYear: Int? = null,
     val links: Collection<WebLink>? = null,
+    val externalIds: ExternalIds? = null,
 
     val statusLock: Boolean? = null,
     val titleLock: Boolean? = null,

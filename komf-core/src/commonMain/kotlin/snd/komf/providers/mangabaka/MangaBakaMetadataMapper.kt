@@ -27,6 +27,7 @@ import snd.komf.model.ProviderBookId
 import snd.komf.model.ProviderBookMetadata
 import snd.komf.model.SeriesBook
 import snd.komf.providers.mangabaka.api.MangaBakaSeriesImage
+import snd.komf.model.ExternalIds
 
 
 class MangaBakaMetadataMapper(
@@ -133,7 +134,12 @@ class MangaBakaMetadataMapper(
             thumbnail = thumbnail,
             releaseDate = ReleaseDate(series.year, null, null),
             links = links,
-            score = series.rating
+            score = series.rating,
+            externalIds = ExternalIds(
+                aniListId = series.source.anilist?.id,
+                malId = series.source.myAnimeList?.id,
+                mangaBakaId = series.id.value,
+            ),
         )
 
         return MetadataConfigApplier.apply(

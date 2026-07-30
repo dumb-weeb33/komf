@@ -43,6 +43,7 @@ import snd.komf.model.SeriesStatus
 import snd.komf.model.WebLink
 import java.nio.file.Path
 import kotlin.io.path.nameWithoutExtension
+import snd.komf.model.ExternalIds
 
 class KavitaMediaServerClientAdapter(private val kavitaClient: KavitaClient) : MediaServerClient {
 
@@ -112,12 +113,13 @@ class KavitaMediaServerClientAdapter(private val kavitaClient: KavitaClient) : M
         metadata: MediaServerSeriesMetadataUpdate
     ) {
         val localizedName = metadata.alternativeTitles?.find { it.language != null }
-        if (metadata.titleSort != null || localizedName != null) {
+        if (metadata.titleSort != null || localizedName != null || metadata.externalIds != null) {
             val series = kavitaClient.getSeries(seriesId.toKavitaSeriesId())
             kavitaClient.updateSeries(
                 series.toKavitaTitleUpdate(
                     metadata.titleSort?.name,
-                    localizedName?.name
+                    localizedName?.name,
+                    metadata.externalIds,
                 )
             )
         }
@@ -476,16 +478,21 @@ private fun kavitaSeriesResetRequest(seriesId: KavitaSeriesId): KavitaSeriesMeta
     return KavitaSeriesMetadataUpdateRequest(metadata)
 }
 
-private fun KavitaSeries.toKavitaTitleUpdate(newSortName: String?, newLocalizedName: String?) =
-    KavitaSeriesUpdateRequest(
-        id = id,
-        sortName = newSortName?.trim() ?: sortName,
-        localizedName = newLocalizedName?.trim() ?: localizedName,
-        sortNameLocked = sortNameLocked,
-        localizedNameLocked = localizedNameLocked,
-
-        coverImageLocked = coverImageLocked
-    )
+private fun KavitaSeries.toKavitaTitleUpdate(
+    newSortName: String?,
+    newLocalizedName: String?,
+    externalIds: ExternalIds?,
+) = KavitaSeriesUpdateRequest(
+    id = id,
+    sortName = newSortName?.trim() ?: sortName,
+    localizedName = newLocalizedName?.trim() ?: localizedName,
+    sortNameLocked = sortNameLocked,
+    localizedNameLocked = localizedNameLocked,
+    coverImageLocked = coverImageLocked,
+    aniListId = externalIds?.aniListId,
+    malId = externalIds?.malId,
+    mangaBakaId = externalIds?.mangaBakaId,
+)
 
 private fun KavitaSeries.toKavitaCoverResetRequest() = KavitaSeriesUpdateRequest(
     id = id,
