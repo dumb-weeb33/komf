@@ -399,7 +399,7 @@ private fun MediaServerSeriesMetadataUpdate.toKavitaSeriesMetadataUpdate(current
         languageLocked = currentMetadata.languageLocked,
         summaryLocked = currentMetadata.summaryLocked,
         ageRatingLocked = currentMetadata.ageRatingLocked,
-        publicationStatusLocked = currentMetadata.publicationStatusLocked,
+        publicationStatusLocked = if (status != null) true else currentMetadata.publicationStatusLocked,
         genresLocked = currentMetadata.genresLocked,
         tagsLocked = currentMetadata.tagsLocked,
         writerLocked = currentMetadata.writerLocked,
